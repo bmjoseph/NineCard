@@ -3,6 +3,7 @@
 # ---------------------------------------------------------
 
 import random
+from scoring import *
 
 class Card:
     """
@@ -144,7 +145,7 @@ class Hand(CardCollection):
         hand_boof, suitStarts, sz = give_me_handBoof_suitStarts_and_sz(self) #creates 3 inputs to scoring algorithm
 
         maxScore = F(sz, hand_boof, suitStarts) 
-        totalScore = np.sum([c.value for c in self.cards])
+        totalScore = sum([c.value for c in self.cards])
         finalScore = totalScore - maxScore
         
         return finalScore
