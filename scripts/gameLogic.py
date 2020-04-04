@@ -4,6 +4,9 @@
 
 import random
 from scoring import *
+# Ideally we can remove this import. 
+# It's only used for setting the seed which is later used by the strategy functions
+import numpy as np
 
 class Card:
     """
@@ -290,7 +293,8 @@ class Game:
     """
     
     def __init__(self, player_names, knock_strategies, pile_strategies,
-                 discard_strategies, target_score, verbose = False):
+                 discard_strategies, target_score, total_rounds = None,
+                 verbose = False, random_seed = None):
         """
         Create a new game to be played by players
         player_names: List of Strings. A list of the names of the game players
@@ -298,8 +302,15 @@ class Game:
         pile_strategies: List of Functions. Ordered list of players' pile strategies
         discard_strategies: List of Functions. Ordered list of players' discard strategies
         target_score: Int. Stopping condition for the game
+        total_rounds: Int. If entered, will not play to the target score but instead just
+                            this many total rounds, storing each value
         verbose: Boolean. If true, will print messages to let the viewer know what's happening.
+        random_seed: Int. If entered, will set a seed for game reproducibility.
         """
+        # If there is a random seed, set it for reproducibility
+        if random_seed is not None:
+            random.seed(random_seed)
+            np.random.seed(random_seed)
         # Get a list of all the game players
         self.num_players = len(player_names)
         self.players = []
@@ -313,9 +324,14 @@ class Game:
         self.curr_dealer = 0
         self.target_score = target_score
         self.verbose = verbose
+        self.total_rounds = total_rounds
         if self.verbose: 
             print("------------------------------------------------------------")
-            print("New game started! Play to", target_score)
+            if total_rounds is not None:
+                print("New game started! Play", total_rounds, "total rounds")
+            else:
+                print("New game started! Play to", target_score)
+            print("------------------------------------------------------------")
         
         
     def play_round(self):
@@ -399,9 +415,18 @@ class Game:
         
         
     def play_game(self):
-        """Take turns taking rounds until someone achieves the target score, thereby ending the game."""
-        while max([p.get_score() for p in self.players]) < self.target_score:
-            self.play_round()
+        """
+        Take turns taking rounds until either: 
+            1) Someone achieves the target score or
+            2) The total rounds are achieved,
+        Thereby ending the game.
+        """
+        if self.total_rounds is not None:
+            for i in range(self.total_rounds):
+                self.play_round()
+        else:
+            while max([p.get_score() for p in self.players]) < self.target_score:
+                self.play_round()
         # Game is now over, return a dictionary mapping names to scores
         return {p.name:p.score for p in self.players}
 
