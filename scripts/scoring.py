@@ -20,7 +20,7 @@ def rankOf(x, hand_boof):
     return x[0]
 
 def nextRankOf(x, hand_boof):
-    if x == 'K': return 'god'
+    if x == 'K': return 'nothing higher'
     return ranks[ranks.index(x) + 1]
 
 def suitOf(x, hand_boof):
