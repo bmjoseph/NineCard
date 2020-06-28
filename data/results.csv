@@ -1,0 +1,13 @@
+avg_win,discard_strategy,draw_strategy,elapsed_seconds,knock_strategy,notes,player_number,rounds,seed,sim_id,start_time,var_win,wins
+1.8,Discard Highest Useless,Pile if Completes,7.0520770000000015,Knock at 50,TESTING,0.0,10.0,11.0,1.0,2020-06-28 13:53:27,16.166632302368974,4.0
+-1.8,Discard Highest Useless,Pile if Completes,7.0520770000000015,Knock at 13,TESTING,1.0,10.0,11.0,1.0,2020-06-28 13:53:27,16.166632302368974,6.0
+-6.32,Discard Highest Useless,Pile if Completes,18.18548,Knock at 50,TESTING,0.0,25.0,13.0,2.0,2020-06-28 13:54:00,13.947673641148908,10.0
+6.32,Discard Highest Useless,Pile if Completes,18.18548,Knock at 13,TESTING,1.0,25.0,13.0,2.0,2020-06-28 13:54:00,13.947673641148908,15.0
+-4.04,Discard Highest Useless,Pile if Completes,85.766441,Do not Knock,TESTING,0.0,25.0,13.0,3.0,2020-06-28 13:55:35,10.978087265093134,10.0
+4.04,Discard Highest Useless,Pile if Completes,85.766441,Knock at 13,TESTING,1.0,25.0,13.0,3.0,2020-06-28 13:55:35,10.978087265093134,14.0
+-2.32,Discard Highest Useless,No Pile,67.12859399999999,Knock at 13,TESTING,0.0,25.0,13.0,4.0,2020-06-28 14:00:25,13.95054120813956,7.0
+2.32,Discard Highest Useless,Pile if Completes,67.12859399999999,Knock at 13,TESTING,1.0,25.0,13.0,4.0,2020-06-28 14:00:25,13.95054120813956,18.0
+-3.32,Discard Highest Useless,No Pile,13.119299,Knock at 50,TESTING,0.0,25.0,13.0,5.0,2020-06-28 14:03:58,211.1776,12.0
+3.32,Discard Highest Useless,Pile if Completes,13.119299,Knock at 50,TESTING,1.0,25.0,13.0,5.0,2020-06-28 14:03:58,211.1776,13.0
+0.4,Discard Highest Useless,No Pile,18.316905,Knock at 13,TESTING,0.0,25.0,13.0,6.0,2020-06-28 14:06:44,258.63999999999993,12.0
+-0.4,Discard Highest Useless,Pile if Completes,18.316905,Knock at 50,TESTING,1.0,25.0,13.0,6.0,2020-06-28 14:06:44,258.63999999999993,11.0

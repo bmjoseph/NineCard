@@ -9,6 +9,8 @@ from scoring import *
 import numpy as np
 import pandas as pd # :(
 import os
+import sys
+from datetime import datetime, timedelta
 
 class Card:
     """
@@ -185,9 +187,9 @@ class Player:
     Represents one player in the game
     
     name: String. Some kind of identifier for the player
-    should_knock_strategy: Function(hand, deck, pile, anyone_knocked). Returns Boolean
-    should_draw_pile_strategy: Function(hand, deck, pile, anyone_knocked). Returns Boolean
-    pick_discard_strategy: Function(hand, deck, pile, anyone_knocked). Returns Card.
+    should_knock_strategy: Function(hand, deck, pile, anyone_knocked, current_turn). Returns Boolean
+    should_draw_pile_strategy: Function(hand, deck, pile, anyone_knocked, current_turn). Returns Boolean
+    pick_discard_strategy: Function(hand, deck, pile, anyone_knocked, current_turn). Returns Card.
     
     """
     
@@ -229,7 +231,7 @@ class Player:
         pile.add_cards(card)
             
         
-    def take_turn(self, deck, pile, anyone_knocked):
+    def take_turn(self, deck, pile, anyone_knocked, current_turn):
         """
         Use your strategies to take your turn. This means:
         1) Decide if you should knock
@@ -240,11 +242,12 @@ class Player:
         pile: Pile. The current discard pile.
         anyone_knocked: Boolean. True if another player has alreay knocked,
                         thus signaling the end of the game and that this player cannot knock
+        current_turn: Int. Current turn in the round (starts at 1)
         """
     
         # The player first decides if he is going to knock
         # The player cannot have knocked yet if he is taking a turn. 
-        self.knocked = self.should_knock_strategy(self.hand, deck, pile, anyone_knocked)
+        self.knocked = self.should_knock_strategy(self.hand, deck, pile, anyone_knocked, current_turn)
         
         if self.verbose and self.knocked:
             print(self.name, "decided to knock! (Score of", self.hand.score(), ")")
@@ -256,7 +259,7 @@ class Player:
                     print("The top card on the pile is a", pile.view_top_card())
                 else:
                     print("There are no cards in the discard pile.")
-            draw_from_pile = self.should_draw_pile_strategy(self.hand, deck, pile, anyone_knocked)
+            draw_from_pile = self.should_draw_pile_strategy(self.hand, deck, pile, anyone_knockedm current_turn)
 
             if draw_from_pile:
                 if self.verbose: print(self.name, "drew the", pile.view_top_card(), "from the pile.")
@@ -267,7 +270,7 @@ class Player:
                 if self.verbose: print(self.name, "drew a", self.hand.cards[-1], "from the deck.")
                 
             # The player finally decides which card to discard and add to the pile
-            discard_card = self.pick_discard_strategy(self.hand, deck, pile, anyone_knocked)
+            discard_card = self.pick_discard_strategy(self.hand, deck, pile, anyone_knocked, current_turn)
             if self.verbose: print(self.name, "discards the", discard_card)
             self.discard_to_pile(discard_card, pile)
         
@@ -315,6 +318,8 @@ class Game:
         extra_comments: String. Any additional comments you'd like to store in the csv database.
         save_results: Boolean. Should we save the results of the simulation?
         """
+        # Set the start time time
+        self.start_time = datetime.now()
         # If there is a random seed, set it for reproducibility
         if random_seed is not None:
             random.seed(random_seed)
@@ -372,10 +377,12 @@ class Game:
             
         # Play one whole round until no more turns can be taken
         round_over = False
+        current_turn = 0
         anyone_knocked = False
         player_to_go = (self.curr_dealer + 1) % self.num_players
         if self.verbose: print(self.players[self.curr_dealer].name, "is this round's dealer.")
         while not round_over:
+            current_turn = current_turn + 1
             curr_player = self.players[player_to_go]
             if self.verbose: 
                 print("----------------------------------------")
@@ -387,7 +394,7 @@ class Game:
                 if self.verbose: print(curr_player.name, "has already knocked, the round is over.")
             else:
                 # This must destructively change the player's hand, knocked status, the deck, and the pile.
-                curr_player.take_turn(self.deck, self.pile, anyone_knocked)
+                curr_player.take_turn(self.deck, self.pile, anyone_knocked, current_turn)
                 if curr_player.knocked:
                     anyone_knocked = True
                 player_to_go = (player_to_go + 1) % self.num_players
@@ -432,9 +439,12 @@ class Game:
 
 
     def store_results(self):
+        end_time = datetime.now()
+        elapsed_seconds = (end_time - self.start_time).total_seconds()
         new_results = pd.DataFrame({"sim_id": [], "seed": [], "player_number": [],
                                "draw_strategy": [], "discard_strategy": [], "knock_strategy": [],
                                "rounds": [], "wins": [], "avg_win": [], "var_win": [],
+                               "start_time": [], "elapsed_seconds": [],
                                "notes": []})
         csv_exists = os.path.exists(self.data_path)
         if csv_exists:
@@ -453,7 +463,9 @@ class Game:
                         "knock_strategy": self.knock_strategies[i], 
                         "rounds": self.total_rounds, "wins": sum(np.diff(np.array(self.players[i].score)) > 0),
                         "avg_win": np.mean(np.diff(np.array(self.players[i].score))),
-                        "var_win": np.std(np.diff(np.array(self.players[i].score))),
+                        "var_win": np.std(np.diff(np.array(self.players[i].score)))**2,
+                        "start_time": self.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "elapsed_seconds": elapsed_seconds,
                         "notes": self.extra_comments}
             new_results = new_results.append([curr_row], ignore_index = True)
         if csv_exists:
