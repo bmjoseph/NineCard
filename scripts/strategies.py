@@ -90,20 +90,41 @@ def add_keeper_column(df):
 
 def make_constant_score_knock_strategy(cutoff):
     """Return a knock strategy where the player will knock if they can achieve a score less than cutoff."""
-    def knock_strategy(hand, deck, pile, anyone_knocked):
+    def knock_strategy(hand, deck, pile, anyone_knocked, turn):
         if anyone_knocked:
             return False
         return hand.score() < cutoff
     return knock_strategy
+
+
+def make_list_knock_strategy(lst):
+    '''
+    Return a knock_strategy where the player will knock if they can achieve a score less than a dynamic cutoff based on turns. 
+    The function will be used to for different levels of "aggressiveness" in knock strategies.
+    '''
+    def strategy(hand, deck, pile, anyone_knocked, turn):
+        
+        if turn < len(lst):
+            return lst[turn]
+        
+        else:
+            return lst[len(lst) - 1]
+        
+        return strategy
+            
+aggressive_strategy = make_list_knock_strategy([50, 40, 30, 20, 10])       
+moderate_strategy = make_list_knock_strategy([30, 25, 20, 15, 10])       
+conservative_strategy = make_list_knock_strategy([10, 10, 8, 8, 5])       
+        
     
 
-def always_draw_from_pile(hand, deck, pile, anyone_knocked):
+def always_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
     
     '''
     
-    always draw from the pile
+    Always draw from the pile.
     
-    returns True
+    Returns True (as long as there is a card to draw from the pile)
     
     '''
     if not pile.length():
@@ -111,7 +132,7 @@ def always_draw_from_pile(hand, deck, pile, anyone_knocked):
     
     return True
 
-def never_draw_from_pile(hand, deck, pile, anyone_knocked):
+def never_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
     
     '''
     
@@ -124,7 +145,7 @@ def never_draw_from_pile(hand, deck, pile, anyone_knocked):
     return False
 
     
-def draw_from_pile_if_completes(hand, deck, pile, anyone_knocked):
+def draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn):
     
 
     
@@ -202,7 +223,7 @@ def draw_from_pile_if_completes(hand, deck, pile, anyone_knocked):
 
 
 
-def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked):
+def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
     
     '''
     Takes in the hand and the card we are considering.
@@ -255,7 +276,7 @@ def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked):
         
 
     
-def discard_highest_useless(hand, deck, pile, anyone_knocked):
+def discard_highest_useless(hand, deck, pile, anyone_knocked, turn):
     
     '''
     this function takes in your hand (as a dataframe) and discards the highest card that isn't a "keeper" 
@@ -290,7 +311,7 @@ def discard_highest_useless(hand, deck, pile, anyone_knocked):
 
 
 
-def near_runs_sets_discarder(hand, deck, pile, anyone_knocked):
+def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
     
     '''
     
@@ -337,9 +358,19 @@ def near_runs_sets_discarder(hand, deck, pile, anyone_knocked):
         
         ## getting all of the "false" indexes from bool_array, then selecting the max of those in numeric_ranks to discard
                
-        relevant_indices = np.where(bool_array == False)
+        if sum(bool_array) == len(bool_array): # i.e. if every value is True, then each card is part of a near set/run (this is rare)
+            
+            # discard a random card
+            
+            final_index = np.where(numeric_ranks == np.random.choice(numeric_ranks))[0][0] #the extra indexing breaks a tie if needed
+            
+            return Card(rank[final_index], suits[final_index])
+            
+            
+            
+        relevant_indices = np.where(bool_array == False) # note, this should never return am empty array as per above condition
         
-        final_index = np.where(numeric_ranks == max(numeric_ranks[relevant_indices]))[0][0] # these extra indexes break a tie if needed
+        final_index = np.where(numeric_ranks == max(numeric_ranks[relevant_indices]))[0][0] # the extra indexing breaks a tie if needed
         
         return Card(ranks[final_index], suits[final_index])
         
