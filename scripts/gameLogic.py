@@ -259,7 +259,7 @@ class Player:
                     print("The top card on the pile is a", pile.view_top_card())
                 else:
                     print("There are no cards in the discard pile.")
-            draw_from_pile = self.should_draw_pile_strategy(self.hand, deck, pile, anyone_knockedm current_turn)
+            draw_from_pile = self.should_draw_pile_strategy(self.hand, deck, pile, anyone_knocked, current_turn)
 
             if draw_from_pile:
                 if self.verbose: print(self.name, "drew the", pile.view_top_card(), "from the pile.")
