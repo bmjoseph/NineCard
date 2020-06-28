@@ -7,6 +7,10 @@ from scoring import *
 # Ideally we can remove this import. 
 # It's only used for setting the seed which is later used by the strategy functions
 import numpy as np
+import pandas as pd # :(
+import os
+import sys
+from datetime import datetime, timedelta
 
 class Card:
     """
@@ -183,9 +187,9 @@ class Player:
     Represents one player in the game
     
     name: String. Some kind of identifier for the player
-    should_knock_strategy: Function(hand, deck, pile, anyone_knocked). Returns Boolean
-    should_draw_pile_strategy: Function(hand, deck, pile, anyone_knocked). Returns Boolean
-    pick_discard_strategy: Function(hand, deck, pile, anyone_knocked). Returns Card.
+    should_knock_strategy: Function(hand, deck, pile, anyone_knocked, current_turn). Returns Boolean
+    should_draw_pile_strategy: Function(hand, deck, pile, anyone_knocked, current_turn). Returns Boolean
+    pick_discard_strategy: Function(hand, deck, pile, anyone_knocked, current_turn). Returns Card.
     
     """
     
@@ -227,7 +231,7 @@ class Player:
         pile.add_cards(card)
             
         
-    def take_turn(self, deck, pile, anyone_knocked):
+    def take_turn(self, deck, pile, anyone_knocked, current_turn):
         """
         Use your strategies to take your turn. This means:
         1) Decide if you should knock
@@ -238,11 +242,12 @@ class Player:
         pile: Pile. The current discard pile.
         anyone_knocked: Boolean. True if another player has alreay knocked,
                         thus signaling the end of the game and that this player cannot knock
+        current_turn: Int. Current turn in the round (starts at 1)
         """
     
         # The player first decides if he is going to knock
         # The player cannot have knocked yet if he is taking a turn. 
-        self.knocked = self.should_knock_strategy(self.hand, deck, pile, anyone_knocked)
+        self.knocked = self.should_knock_strategy(self.hand, deck, pile, anyone_knocked, current_turn)
         
         if self.verbose and self.knocked:
             print(self.name, "decided to knock! (Score of", self.hand.score(), ")")
@@ -254,7 +259,7 @@ class Player:
                     print("The top card on the pile is a", pile.view_top_card())
                 else:
                     print("There are no cards in the discard pile.")
-            draw_from_pile = self.should_draw_pile_strategy(self.hand, deck, pile, anyone_knocked)
+            draw_from_pile = self.should_draw_pile_strategy(self.hand, deck, pile, anyone_knockedm current_turn)
 
             if draw_from_pile:
                 if self.verbose: print(self.name, "drew the", pile.view_top_card(), "from the pile.")
@@ -265,7 +270,7 @@ class Player:
                 if self.verbose: print(self.name, "drew a", self.hand.cards[-1], "from the deck.")
                 
             # The player finally decides which card to discard and add to the pile
-            discard_card = self.pick_discard_strategy(self.hand, deck, pile, anyone_knocked)
+            discard_card = self.pick_discard_strategy(self.hand, deck, pile, anyone_knocked, current_turn)
             if self.verbose: print(self.name, "discards the", discard_card)
             self.discard_to_pile(discard_card, pile)
         
@@ -292,39 +297,56 @@ class Game:
     Create a new game for some number of players between 2 and 3
     """
     
-    def __init__(self, player_names, knock_strategies, pile_strategies,
+    def __init__(self, player_names, strategy_dict, knock_strategies, pile_strategies,
                  discard_strategies, target_score, total_rounds = None,
-                 verbose = False, random_seed = None):
+                 verbose = False, random_seed = None, data_path = None,
+                  extra_comments = "", save_results = True):
         """
         Create a new game to be played by players
         player_names: List of Strings. A list of the names of the game players
-        knock_strategies: List of Functions. Ordered list of players' knock strategies
-        pile_strategies: List of Functions. Ordered list of players' pile strategies
-        discard_strategies: List of Functions. Ordered list of players' discard strategies
+        strategy_dict: Dictionary. Mapping name of strategy functions to the functions themselves.
+        knock_strategies: List of Strings. Ordered list of players' knock strategies
+        pile_strategies: List of Stings. Ordered list of players' pile strategies
+        discard_strategies: List of Strings. Ordered list of players' discard strategies
         target_score: Int. Stopping condition for the game
         total_rounds: Int. If entered, will not play to the target score but instead just
                             this many total rounds, storing each value
         verbose: Boolean. If true, will print messages to let the viewer know what's happening.
         random_seed: Int. If entered, will set a seed for game reproducibility.
+        data_path: String. If entered, the path to save the results of the simulation. 
+                            Should be the path to a csv file.
+        extra_comments: String. Any additional comments you'd like to store in the csv database.
+        save_results: Boolean. Should we save the results of the simulation?
         """
+        # Set the start time time
+        self.start_time = datetime.now()
         # If there is a random seed, set it for reproducibility
         if random_seed is not None:
             random.seed(random_seed)
             np.random.seed(random_seed)
+        self.random_seed = random_seed
         # Get a list of all the game players
         self.num_players = len(player_names)
         self.players = []
+        self.strategy_dict = strategy_dict
+        self.knock_strategies = knock_strategies
+        self.pile_strategies = pile_strategies
+        self.discard_strategies = discard_strategies
         for i in range(self.num_players):
             name = player_names[i]
-            knock_strat = knock_strategies[i]
-            pile_strat = pile_strategies[i]
-            discard_strat = discard_strategies[i]
+            knock_strat = strategy_dict[knock_strategies[i]]
+            pile_strat = strategy_dict[pile_strategies[i]]
+            discard_strat = strategy_dict[discard_strategies[i]]
             self.players.append(Player(name, knock_strat, pile_strat, discard_strat, verbose))
         # We will need to keep track of the next player who will take a turn. This will be
         self.curr_dealer = 0
         self.target_score = target_score
         self.verbose = verbose
         self.total_rounds = total_rounds
+        # Store some information about saving
+        self.data_path = data_path
+        self.extra_comments = extra_comments
+        self.save_results = save_results
         if self.verbose: 
             print("------------------------------------------------------------")
             if total_rounds is not None:
@@ -355,10 +377,12 @@ class Game:
             
         # Play one whole round until no more turns can be taken
         round_over = False
+        current_turn = 0
         anyone_knocked = False
         player_to_go = (self.curr_dealer + 1) % self.num_players
         if self.verbose: print(self.players[self.curr_dealer].name, "is this round's dealer.")
         while not round_over:
+            current_turn = current_turn + 1
             curr_player = self.players[player_to_go]
             if self.verbose: 
                 print("----------------------------------------")
@@ -370,7 +394,7 @@ class Game:
                 if self.verbose: print(curr_player.name, "has already knocked, the round is over.")
             else:
                 # This must destructively change the player's hand, knocked status, the deck, and the pile.
-                curr_player.take_turn(self.deck, self.pile, anyone_knocked)
+                curr_player.take_turn(self.deck, self.pile, anyone_knocked, current_turn)
                 if curr_player.knocked:
                     anyone_knocked = True
                 player_to_go = (player_to_go + 1) % self.num_players
@@ -412,7 +436,43 @@ class Game:
         if self.verbose:
             for player in self.players:
                 print(player.name + "'s", "current score is", player.get_score())
-        
+
+
+    def store_results(self):
+        end_time = datetime.now()
+        elapsed_seconds = (end_time - self.start_time).total_seconds()
+        new_results = pd.DataFrame({"sim_id": [], "seed": [], "player_number": [],
+                               "draw_strategy": [], "discard_strategy": [], "knock_strategy": [],
+                               "rounds": [], "wins": [], "avg_win": [], "var_win": [],
+                               "start_time": [], "elapsed_seconds": [],
+                               "notes": []})
+        csv_exists = os.path.exists(self.data_path)
+        if csv_exists:
+            old_results = pd.read_csv(self.data_path)
+            max_prev_id = max(old_results.sim_id)
+        else:
+            print("No data found in", self.data_path)
+            print("Creating new csv.")
+            max_prev_id = 0
+
+        for i in range(len(self.players)):
+            curr_row = {"sim_id": max_prev_id + 1, "seed": self.random_seed,
+                        "player_number": i,
+                        "draw_strategy": self.pile_strategies[i],
+                        "discard_strategy": self.discard_strategies[i],
+                        "knock_strategy": self.knock_strategies[i], 
+                        "rounds": self.total_rounds, "wins": sum(np.diff(np.array(self.players[i].score)) > 0),
+                        "avg_win": np.mean(np.diff(np.array(self.players[i].score))),
+                        "var_win": np.std(np.diff(np.array(self.players[i].score)))**2,
+                        "start_time": self.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "elapsed_seconds": elapsed_seconds,
+                        "notes": self.extra_comments}
+            new_results = new_results.append([curr_row], ignore_index = True)
+        if csv_exists:
+            all_results = old_results.append(new_results, ignore_index = True)
+            all_results.to_csv(self.data_path, index = False)
+        else:
+            new_results.to_csv(self.data_path, index = False)
         
     def play_game(self):
         """
@@ -427,7 +487,13 @@ class Game:
         else:
             while max([p.get_score() for p in self.players]) < self.target_score:
                 self.play_round()
+        if self.save_results:
+            self.store_results()
         # Game is now over, return a dictionary mapping names to scores
         return {p.name:p.score for p in self.players}
+
+
+
+
 
 
