@@ -1,0 +1,34 @@
+---
+title: "Visualize Nine Card Results"
+author: "Bailey Joseph"
+date: "6/28/2020"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(glue)
+library(plotly)
+results <- read_csv("data/results.csv")
+```
+
+```{r}
+results %>% 
+  filter(notes == "Looking for best strategy against an opponent who knocks only at 0",
+         player_number == 1) %>% 
+  mutate(knocked_at = as.numeric(substr(knock_strategy, 9, nchar(knock_strategy)))) %>% 
+  select(knocked_at, everything()) %>% 
+  rename(`Average Win per Round` = avg_win) %>% 
+  ggplot(aes(x = knocked_at, y = `Average Win per Round`)) +
+    geom_point(size = 2, aes(color = `Average Win per Round`, text = glue("Knocked At: {knocked_at}\nOpponent: Knocks at 0\nTrials: {rounds}\nAverage Time per Round: {round(elapsed_seconds/rounds, 2)} Seconds\nAverage Win per Round: {round(`Average Win per Round`, 2)}\nRound level Variance: {round(var_win, 2)}\n"))) +
+    geom_hline(yintercept = 0) +
+    labs(title = "First Grid Search against Opponent who Knocks at 0",
+         y = "Average win Per Round",
+         x = "Constant Knock Strategy") +
+    scale_color_gradient2(high = "dark green") +
+    theme_clean()
+
+ggplotly(tooltip = "text")
+```
+

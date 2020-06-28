@@ -23,28 +23,28 @@ avg_win,discard_strategy,draw_strategy,elapsed_seconds,knock_strategy,notes,play
 -9.0,Discard Highest Useless,Pile if Completes,5.298091,Knock at 20,TESTING,1.0,1.0,4.0,11.0,2020-06-28 14:57:47,0.0,0.0
 18.0,Discard Highest Useless,Pile if Completes,1.3921709999999998,Knock at 0,TESTING,0.0,1.0,5.0,12.0,2020-06-28 14:57:52,0.0,1.0
 -18.0,Discard Highest Useless,Pile if Completes,1.3921709999999998,Knock at 25,TESTING,1.0,1.0,5.0,12.0,2020-06-28 14:57:52,0.0,0.0
-13.0,Discard Highest Useless,Pile if Completes,2.8210029999999997,Knock at 0,TESTING,0.0,1.0,6.0,13.0,2020-06-28 14:57:53,0.0,1.0
--13.0,Discard Highest Useless,Pile if Completes,2.8210029999999997,Knock at 30,TESTING,1.0,1.0,6.0,13.0,2020-06-28 14:57:53,0.0,0.0
+13.0,Discard Highest Useless,Pile if Completes,2.821003,Knock at 0,TESTING,0.0,1.0,6.0,13.0,2020-06-28 14:57:53,0.0,1.0
+-13.0,Discard Highest Useless,Pile if Completes,2.821003,Knock at 30,TESTING,1.0,1.0,6.0,13.0,2020-06-28 14:57:53,0.0,0.0
 3.0,Discard Highest Useless,Pile if Completes,1.557984,Knock at 0,TESTING,0.0,1.0,7.0,14.0,2020-06-28 14:57:56,0.0,1.0
 -3.0,Discard Highest Useless,Pile if Completes,1.557984,Knock at 35,TESTING,1.0,1.0,7.0,14.0,2020-06-28 14:57:56,0.0,0.0
-12.0,Discard Highest Useless,Pile if Completes,0.45689399999999997,Knock at 0,TESTING,0.0,1.0,8.0,15.0,2020-06-28 14:57:58,0.0,1.0
--12.0,Discard Highest Useless,Pile if Completes,0.45689399999999997,Knock at 40,TESTING,1.0,1.0,8.0,15.0,2020-06-28 14:57:58,0.0,0.0
+12.0,Discard Highest Useless,Pile if Completes,0.456894,Knock at 0,TESTING,0.0,1.0,8.0,15.0,2020-06-28 14:57:58,0.0,1.0
+-12.0,Discard Highest Useless,Pile if Completes,0.456894,Knock at 40,TESTING,1.0,1.0,8.0,15.0,2020-06-28 14:57:58,0.0,0.0
 -13.0,Discard Highest Useless,Pile if Completes,0.743871,Knock at 0,TESTING,0.0,1.0,9.0,16.0,2020-06-28 14:57:58,0.0,0.0
 13.0,Discard Highest Useless,Pile if Completes,0.743871,Knock at 45,TESTING,1.0,1.0,9.0,16.0,2020-06-28 14:57:58,0.0,1.0
 23.0,Discard Highest Useless,Pile if Completes,1.574335,Knock at 0,TESTING,0.0,1.0,10.0,17.0,2020-06-28 14:57:59,0.0,1.0
 -23.0,Discard Highest Useless,Pile if Completes,1.574335,Knock at 50,TESTING,1.0,1.0,10.0,17.0,2020-06-28 14:57:59,0.0,0.0
 -25.0,Discard Highest Useless,Pile if Completes,0.235209,Knock at 0,TESTING,0.0,1.0,11.0,18.0,2020-06-28 14:58:01,0.0,0.0
 25.0,Discard Highest Useless,Pile if Completes,0.235209,Knock at 55,TESTING,1.0,1.0,11.0,18.0,2020-06-28 14:58:01,0.0,1.0
--5.0,Discard Highest Useless,Pile if Completes,0.39376300000000003,Knock at 0,TESTING,0.0,1.0,12.0,19.0,2020-06-28 14:58:01,0.0,0.0
-5.0,Discard Highest Useless,Pile if Completes,0.39376300000000003,Knock at 60,TESTING,1.0,1.0,12.0,19.0,2020-06-28 14:58:01,0.0,1.0
+-5.0,Discard Highest Useless,Pile if Completes,0.393763,Knock at 0,TESTING,0.0,1.0,12.0,19.0,2020-06-28 14:58:01,0.0,0.0
+5.0,Discard Highest Useless,Pile if Completes,0.393763,Knock at 60,TESTING,1.0,1.0,12.0,19.0,2020-06-28 14:58:01,0.0,1.0
 0.0,Discard Highest Useless,Pile if Completes,14.101463,Knock at 0,TESTING,0.0,2.0,0.0,20.0,2020-06-28 15:12:36,0.0,0.0
 0.0,Discard Highest Useless,Pile if Completes,14.101463,Knock at 0,TESTING,1.0,2.0,0.0,20.0,2020-06-28 15:12:36,0.0,0.0
 -3.0,Discard Highest Useless,Pile if Completes,7.988146,Knock at 0,TESTING,0.0,2.0,1.0,21.0,2020-06-28 15:12:51,16.0,1.0
 3.0,Discard Highest Useless,Pile if Completes,7.988146,Knock at 5,TESTING,1.0,2.0,1.0,21.0,2020-06-28 15:12:51,16.0,1.0
 -8.0,Discard Highest Useless,Pile if Completes,13.292974,Knock at 0,TESTING,0.0,2.0,2.0,22.0,2020-06-28 15:12:59,64.0,0.0
 8.0,Discard Highest Useless,Pile if Completes,13.292974,Knock at 10,TESTING,1.0,2.0,2.0,22.0,2020-06-28 15:12:59,64.0,1.0
-3.5,Discard Highest Useless,Pile if Completes,5.067019999999999,Knock at 0,TESTING,0.0,2.0,3.0,23.0,2020-06-28 15:13:12,90.25,1.0
--3.5,Discard Highest Useless,Pile if Completes,5.067019999999999,Knock at 15,TESTING,1.0,2.0,3.0,23.0,2020-06-28 15:13:12,90.25,1.0
+3.5,Discard Highest Useless,Pile if Completes,5.0670199999999985,Knock at 0,TESTING,0.0,2.0,3.0,23.0,2020-06-28 15:13:12,90.25,1.0
+-3.5,Discard Highest Useless,Pile if Completes,5.0670199999999985,Knock at 15,TESTING,1.0,2.0,3.0,23.0,2020-06-28 15:13:12,90.25,1.0
 9.0,Discard Highest Useless,Pile if Completes,8.491000999999999,Knock at 0,TESTING,0.0,2.0,4.0,24.0,2020-06-28 15:13:17,0.0,2.0
 -9.0,Discard Highest Useless,Pile if Completes,8.491000999999999,Knock at 20,TESTING,1.0,2.0,4.0,24.0,2020-06-28 15:13:17,0.0,0.0
 15.0,Discard Highest Useless,Pile if Completes,2.804569,Knock at 0,TESTING,0.0,2.0,5.0,25.0,2020-06-28 15:13:25,9.0,2.0
@@ -63,3 +63,29 @@ avg_win,discard_strategy,draw_strategy,elapsed_seconds,knock_strategy,notes,play
 15.0,Discard Highest Useless,Pile if Completes,1.155122,Knock at 55,TESTING,1.0,2.0,11.0,31.0,2020-06-28 15:13:44,100.0,2.0
 16.5,Discard Highest Useless,Pile if Completes,0.775796,Knock at 0,TESTING,0.0,2.0,12.0,32.0,2020-06-28 15:13:45,462.25,1.0
 -16.5,Discard Highest Useless,Pile if Completes,0.775796,Knock at 60,TESTING,1.0,2.0,12.0,32.0,2020-06-28 15:13:45,462.25,1.0
+-0.59,Discard Highest Useless,Pile if Completes,665.674302,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,0.0,33.0,2020-06-28 15:21:39,74.0619,35.0
+0.59,Discard Highest Useless,Pile if Completes,665.674302,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,0.0,33.0,2020-06-28 15:21:39,74.0619,45.0
+-0.62,Discard Highest Useless,Pile if Completes,489.971976,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,1.0,34.0,2020-06-28 15:32:45,97.9756,43.0
+0.62,Discard Highest Useless,Pile if Completes,489.971976,Knock at 5,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,1.0,34.0,2020-06-28 15:32:45,97.9756,54.0
+-2.56,Discard Highest Useless,Pile if Completes,377.06119,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,2.0,35.0,2020-06-28 15:40:55,114.60639999999998,34.0
+2.56,Discard Highest Useless,Pile if Completes,377.06119,Knock at 10,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,2.0,35.0,2020-06-28 15:40:55,114.60639999999998,61.0
+-3.31,Discard Highest Useless,Pile if Completes,295.71230299999996,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,3.0,36.0,2020-06-28 15:47:12,140.83389999999997,40.0
+3.31,Discard Highest Useless,Pile if Completes,295.71230299999996,Knock at 15,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,3.0,36.0,2020-06-28 15:47:12,140.83389999999997,56.0
+-2.12,Discard Highest Useless,Pile if Completes,255.138871,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,4.0,37.0,2020-06-28 15:52:08,196.1056,51.0
+2.12,Discard Highest Useless,Pile if Completes,255.138871,Knock at 20,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,4.0,37.0,2020-06-28 15:52:08,196.1056,48.0
+-1.79,Discard Highest Useless,Pile if Completes,242.73743199999998,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,5.0,38.0,2020-06-28 15:56:23,259.7459,53.0
+1.79,Discard Highest Useless,Pile if Completes,242.73743199999998,Knock at 25,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,5.0,38.0,2020-06-28 15:56:23,259.7459,43.0
+1.58,Discard Highest Useless,Pile if Completes,207.738952,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,6.0,39.0,2020-06-28 16:00:25,182.3636,59.0
+-1.58,Discard Highest Useless,Pile if Completes,207.738952,Knock at 30,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,6.0,39.0,2020-06-28 16:00:25,182.3636,39.0
+-0.88,Discard Highest Useless,Pile if Completes,115.661828,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,7.0,40.0,2020-06-28 16:03:53,278.8056,51.0
+0.88,Discard Highest Useless,Pile if Completes,115.661828,Knock at 35,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,7.0,40.0,2020-06-28 16:03:53,278.8056,46.0
+1.92,Discard Highest Useless,Pile if Completes,110.753531,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,8.0,41.0,2020-06-28 16:05:49,289.31359999999995,58.0
+-1.92,Discard Highest Useless,Pile if Completes,110.753531,Knock at 40,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,8.0,41.0,2020-06-28 16:05:49,289.31359999999995,39.0
+4.23,Discard Highest Useless,Pile if Completes,85.28135400000002,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,9.0,42.0,2020-06-28 16:07:40,261.0171,58.0
+-4.23,Discard Highest Useless,Pile if Completes,85.28135400000002,Knock at 45,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,9.0,42.0,2020-06-28 16:07:40,261.0171,37.0
+0.61,Discard Highest Useless,Pile if Completes,73.063078,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,10.0,43.0,2020-06-28 16:09:05,321.9379,49.0
+-0.61,Discard Highest Useless,Pile if Completes,73.063078,Knock at 50,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,10.0,43.0,2020-06-28 16:09:05,321.9379,48.0
+4.94,Discard Highest Useless,Pile if Completes,54.118508,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,11.0,44.0,2020-06-28 16:10:18,310.3164000000001,59.0
+-4.94,Discard Highest Useless,Pile if Completes,54.118508,Knock at 55,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,11.0,44.0,2020-06-28 16:10:18,310.3164000000001,39.0
+6.91,Discard Highest Useless,Pile if Completes,45.401332,Knock at 0,Looking for best strategy against an opponent who knocks only at 0,0.0,100.0,12.0,45.0,2020-06-28 16:11:12,307.9219,61.0
+-6.91,Discard Highest Useless,Pile if Completes,45.401332,Knock at 60,Looking for best strategy against an opponent who knocks only at 0,1.0,100.0,12.0,45.0,2020-06-28 16:11:12,307.9219,39.0
