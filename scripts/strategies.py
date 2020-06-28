@@ -96,7 +96,34 @@ def make_constant_score_knock_strategy(cutoff):
         return hand.score() < cutoff
     return knock_strategy
     
-def consider_draw_from_pile(hand, deck, pile, anyone_knocked):
+
+def always_draw_from_pile(hand, deck, pile, anyone_knocked):
+    
+    '''
+    
+    always draw from the pile
+    
+    returns True
+    
+    '''
+    if not pile.length():
+        return False
+    
+    return True
+
+def never_draw_from_pile(hand, deck, pile, anyone_knocked):
+    
+    '''
+    
+    never draw from pile (always draw from the deck)
+    
+    returns False
+    
+    '''
+     
+    return False
+    
+def draw_from_pile_if_completes(hand, deck, pile, anyone_knocked):
     
 
     
@@ -173,7 +200,7 @@ def consider_draw_from_pile(hand, deck, pile, anyone_knocked):
 
     
     
-def level_1_discard_strategy(hand, deck, pile, anyone_knocked):
+def discard_highest_useless(hand, deck, pile, anyone_knocked):
     
     '''
     this function takes in your hand (as a dataframe) and discards the highest card that isn't a "keeper" 
