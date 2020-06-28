@@ -7,6 +7,7 @@ from scoring import *
 # Ideally we can remove this import. 
 # It's only used for setting the seed which is later used by the strategy functions
 import numpy as np
+import os
 
 class Card:
     """
@@ -294,37 +295,46 @@ class Game:
     
     def __init__(self, player_names, knock_strategies, pile_strategies,
                  discard_strategies, target_score, total_rounds = None,
-                 verbose = False, random_seed = None):
+                 verbose = False, random_seed = None, data_path = None,
+                  extra_comments = ""):
         """
         Create a new game to be played by players
         player_names: List of Strings. A list of the names of the game players
-        knock_strategies: List of Functions. Ordered list of players' knock strategies
-        pile_strategies: List of Functions. Ordered list of players' pile strategies
-        discard_strategies: List of Functions. Ordered list of players' discard strategies
+        strategy_dict: Dictionary. Mapping name of strategy functions to the functions themselves.
+        knock_strategies: List of Strings. Ordered list of players' knock strategies
+        pile_strategies: List of Stings. Ordered list of players' pile strategies
+        discard_strategies: List of Strings. Ordered list of players' discard strategies
         target_score: Int. Stopping condition for the game
         total_rounds: Int. If entered, will not play to the target score but instead just
                             this many total rounds, storing each value
         verbose: Boolean. If true, will print messages to let the viewer know what's happening.
         random_seed: Int. If entered, will set a seed for game reproducibility.
+        data_path: String. If entered, the path to save the results of the simulation. 
+                            Should be the path to a csv file.
+        extra_comments: String. Any additional comments you'd like to store in the csv database.
         """
         # If there is a random seed, set it for reproducibility
         if random_seed is not None:
             random.seed(random_seed)
             np.random.seed(random_seed)
+        self.random_seed = random_seed
         # Get a list of all the game players
         self.num_players = len(player_names)
         self.players = []
         for i in range(self.num_players):
             name = player_names[i]
-            knock_strat = knock_strategies[i]
-            pile_strat = pile_strategies[i]
-            discard_strat = discard_strategies[i]
+            knock_strat = strategy_dict[knock_strategies[i]]
+            pile_strat = strategy_dict[pile_strategies[i]]
+            discard_strat = strategy_dict[discard_strategies[i]]
             self.players.append(Player(name, knock_strat, pile_strat, discard_strat, verbose))
         # We will need to keep track of the next player who will take a turn. This will be
         self.curr_dealer = 0
         self.target_score = target_score
         self.verbose = verbose
         self.total_rounds = total_rounds
+        # Store some information about saving
+        self.data_path = data_path
+        self.extra_comments = extra_comments
         if self.verbose: 
             print("------------------------------------------------------------")
             if total_rounds is not None:
@@ -412,6 +422,21 @@ class Game:
         if self.verbose:
             for player in self.players:
                 print(player.name + "'s", "current score is", player.get_score())
+
+
+    def store_results(self):
+        if os.path.exists(self.data_path):
+            old_results = pd.read_csv(self.data_path)
+            max_prev_id = max(old_results.sim_id)
+            for player in self.players:
+                curr_row = {"sim_id": max_prev_id + 1, "seed": self.random_seed,
+                            "draw_strategy": self.strategy_dict[]}
+        else:
+            print("No data found in", self.data_path)
+            print("Creating new csv.")
+
+        
+
         
         
     def play_game(self):
@@ -429,5 +454,9 @@ class Game:
                 self.play_round()
         # Game is now over, return a dictionary mapping names to scores
         return {p.name:p.score for p in self.players}
+
+
+
+
 
 
