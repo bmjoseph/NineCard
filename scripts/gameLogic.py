@@ -399,10 +399,11 @@ class Game:
                     anyone_knocked = True
                 player_to_go = (player_to_go + 1) % self.num_players
                 if not self.deck.length():
-                    if self.verbose: print("The deck is empty! This ends the round. We will score the round as if", curr_player.name, "knocked.")
+                    if self.verbose: print("The deck is empty! This ends the round. We will score the round as if", curr_player.name, "knocked. (unless someone else already has)")
                     round_over = True
-                    curr_player.knocked = True
-                    anyone_knocked = True
+                    if not anyone_knocked:
+                        curr_player.knocked = True
+                        anyone_knocked = True
         
         # Now that the round is over, we need to score the round for each player
         for player in self.players:
@@ -413,6 +414,7 @@ class Game:
         # Create a list of the players who did not knock and note the player who did knock
         non_knock_players = []
         for player in self.players:
+            if self.verbose: print(player.name + "Knocked?", player.knocked)
             if not player.knocked:
                 non_knock_players.append(player)
             else:
