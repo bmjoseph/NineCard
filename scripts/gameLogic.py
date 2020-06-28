@@ -7,6 +7,7 @@ from scoring import *
 # Ideally we can remove this import. 
 # It's only used for setting the seed which is later used by the strategy functions
 import numpy as np
+import pandas as pd # :(
 import os
 
 class Card:
@@ -293,10 +294,10 @@ class Game:
     Create a new game for some number of players between 2 and 3
     """
     
-    def __init__(self, player_names, knock_strategies, pile_strategies,
+    def __init__(self, player_names, strategy_dict, knock_strategies, pile_strategies,
                  discard_strategies, target_score, total_rounds = None,
                  verbose = False, random_seed = None, data_path = None,
-                  extra_comments = ""):
+                  extra_comments = "", save_results = True):
         """
         Create a new game to be played by players
         player_names: List of Strings. A list of the names of the game players
@@ -312,6 +313,7 @@ class Game:
         data_path: String. If entered, the path to save the results of the simulation. 
                             Should be the path to a csv file.
         extra_comments: String. Any additional comments you'd like to store in the csv database.
+        save_results: Boolean. Should we save the results of the simulation?
         """
         # If there is a random seed, set it for reproducibility
         if random_seed is not None:
@@ -321,6 +323,10 @@ class Game:
         # Get a list of all the game players
         self.num_players = len(player_names)
         self.players = []
+        self.strategy_dict = strategy_dict
+        self.knock_strategies = knock_strategies
+        self.pile_strategies = pile_strategies
+        self.discard_strategies = discard_strategies
         for i in range(self.num_players):
             name = player_names[i]
             knock_strat = strategy_dict[knock_strategies[i]]
@@ -335,6 +341,7 @@ class Game:
         # Store some information about saving
         self.data_path = data_path
         self.extra_comments = extra_comments
+        self.save_results = save_results
         if self.verbose: 
             print("------------------------------------------------------------")
             if total_rounds is not None:
@@ -425,19 +432,35 @@ class Game:
 
 
     def store_results(self):
-        if os.path.exists(self.data_path):
+        new_results = pd.DataFrame({"sim_id": [], "seed": [], "player_number": [],
+                               "draw_strategy": [], "discard_strategy": [], "knock_strategy": [],
+                               "rounds": [], "wins": [], "avg_win": [], "var_win": [],
+                               "notes": []})
+        csv_exists = os.path.exists(self.data_path)
+        if csv_exists:
             old_results = pd.read_csv(self.data_path)
             max_prev_id = max(old_results.sim_id)
-            for player in self.players:
-                curr_row = {"sim_id": max_prev_id + 1, "seed": self.random_seed,
-                            "draw_strategy": self.strategy_dict[]}
         else:
             print("No data found in", self.data_path)
             print("Creating new csv.")
+            max_prev_id = 0
 
-        
-
-        
+        for i in range(len(self.players)):
+            curr_row = {"sim_id": max_prev_id + 1, "seed": self.random_seed,
+                        "player_number": i,
+                        "draw_strategy": self.pile_strategies[i],
+                        "discard_strategy": self.discard_strategies[i],
+                        "knock_strategy": self.knock_strategies[i], 
+                        "rounds": self.total_rounds, "wins": sum(np.diff(np.array(self.players[i].score)) > 0),
+                        "avg_win": np.mean(np.diff(np.array(self.players[i].score))),
+                        "var_win": np.std(np.diff(np.array(self.players[i].score))),
+                        "notes": self.extra_comments}
+            new_results = new_results.append([curr_row], ignore_index = True)
+        if csv_exists:
+            all_results = old_results.append(new_results, ignore_index = True)
+            all_results.to_csv(self.data_path, index = False)
+        else:
+            new_results.to_csv(self.data_path, index = False)
         
     def play_game(self):
         """
@@ -452,6 +475,8 @@ class Game:
         else:
             while max([p.get_score() for p in self.players]) < self.target_score:
                 self.play_round()
+        if self.save_results:
+            self.store_results()
         # Game is now over, return a dictionary mapping names to scores
         return {p.name:p.score for p in self.players}
 
