@@ -104,18 +104,13 @@ def make_list_knock_strategy(lst):
     '''
     def strategy(hand, deck, pile, anyone_knocked, turn):
         
-        if turn < len(lst):
-            return lst[turn]
+        if turn < len(lst): # indexed from 1
+            return lst[turn - 1]
         
         else:
             return lst[len(lst) - 1]
         
         return strategy
-            
-aggressive_strategy = make_list_knock_strategy([50, 40, 30, 20, 10])       
-moderate_strategy = make_list_knock_strategy([30, 25, 20, 15, 10])       
-conservative_strategy = make_list_knock_strategy([10, 10, 8, 8, 5])       
-        
     
 
 def always_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
