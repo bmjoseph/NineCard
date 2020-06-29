@@ -223,13 +223,19 @@ def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, 
     '''
     Takes in the hand and the card we are considering.
     
-    If there is more than half the deck remaining, we figure out if it is part of a near set/run, and keep it if it is
+    If there is more than half the deck remaining, we figure out if it is part of a near set/run, and keep it if it is.
     
     If less than half the deck is remaining, we figure out if it is part of an actual set/run, and keep it if it is.
     
     Return Boolean (whether to keep it or not).
     
     '''
+    
+    # getting the new card object
+    
+    if not pile.length():
+        return False
+    
     num_players = 2
     
     starting_deck_length = 52 - (num_players*9)
@@ -267,7 +273,7 @@ def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, 
     else: #i.e. there are less than or equal to half the cards remaining in the deck (after the cards are dealt)
         
         #only keep the card if it completes a set or a run
-        return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked) # returns boolean     
+        return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) # returns boolean     
         
 
     
@@ -359,7 +365,7 @@ def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
             
             final_index = np.where(numeric_ranks == np.random.choice(numeric_ranks))[0][0] #the extra indexing breaks a tie if needed
             
-            return Card(rank[final_index], suits[final_index])
+            return Card(ranks[final_index], suits[final_index])
             
             
             
@@ -372,7 +378,7 @@ def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
         
     else:
         
-        return discard_highest_useless(hand, deck, pile, anyone_knocked)
+        return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
 
     
 
