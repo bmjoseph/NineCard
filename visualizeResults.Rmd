@@ -14,6 +14,19 @@ results <- read_csv("data/results.csv")
 ```
 
 ```{r}
+theme_clean <- function() {
+  theme_bw(base_size = 11) +
+    theme(text = element_text(family = "Roboto"),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          panel.background = element_rect(colour = "#E1E1E1"),
+          panel.border = element_blank())
+}
+
+```
+
+```{r}
 results %>% 
   filter(notes %in% c("Looking for best strategy against an opponent who knocks only at 0"),
          player_number == 1) %>% 
@@ -69,7 +82,7 @@ constant_conservative_knock_grid_search <- grid_search_half_triangle %>%
   group_by(knocked_at, opp_knocked_at) %>% 
   slice(1) %>% 
   ungroup() %>% 
-  mutate(avg_win = round(avg_win, 2)) %>% 
+  mutate(avg_win = ifelse(knocked_at == opp_knocked_at, 0, round(avg_win, 2))) %>% 
   rename(`Average Win per Round` = avg_win) %>% 
   ggplot(aes(x = knocked_at, y = opp_knocked_at, fill = `Average Win per Round`)) +
   geom_tile(aes(text = glue("Knocked At: {knocked_at}\nOpponent Knocks At: {opp_knocked_at}\nTrials: {rounds}\nAverage Time per Round: {round(elapsed_seconds/rounds, 2)} Seconds\nAverage Win per Round: {round(`Average Win per Round`, 2)}\nNumber of Wins: {wins}\nRound level Variance: {round(var_win, 2)}\n"))) +
@@ -85,6 +98,58 @@ ggplotly(constant_conservative_knock_grid_search, tooltip = "text")
 ggsave("visuals/constant_conservative_knock_grid_search.png",
        constant_conservative_knock_grid_search,
        height = 5, width = 7, units = "in", dpi = 400)
+```
 
+# Run a simulation/tournament
+
+```{r}
+grid_search_full_frame <- grid_search_half_triangle %>% 
+  bind_rows(
+    grid_search_half_triangle %>% 
+      rename(opp_knocked_at = knocked_at,
+             knocked_at = opp_knocked_at,
+             opp_wins = wins,
+             wins = opp_wins) %>% 
+      mutate(avg_win = -avg_win)
+  ) %>% 
+  group_by(knocked_at, opp_knocked_at) %>% 
+  slice(1) %>% 
+  ungroup()
+
+run_tourney <- function(full_frame, rounds) {
+  tourney_winnings <- vector("list", length = rounds)
+  tourney_weights <- vector("list", length = rounds + 1)
+  curr_weight_frame <- data.frame(knocked_at = seq(0, 60, 5),
+                                  weight = 1)
+  tourney_weights[[1]] <- curr_weight_frame %>% mutate(round = 0)
+  for (i in 1:rounds) {
+    round_results <- full_frame %>% 
+      # Do not count games against same strategy since that's just noise
+      filter(knocked_at != opp_knocked_at) %>% 
+      left_join(curr_weight_frame, by = c("opp_knocked_at" = "knocked_at")) %>% 
+      group_by(knocked_at) %>% 
+      summarize(avg_win_tourney = weighted.mean(avg_win, weight)) %>% 
+      ungroup() %>% 
+      mutate(weight = (avg_win_tourney - min(avg_win_tourney))/(max(avg_win_tourney) - min(avg_win_tourney)))
+    tourney_winnings[[i]] <- round_results %>% select(knocked_at, avg_win_tourney) %>% mutate(round = i)
+    curr_weight_frame <- round_results %>% select(knocked_at, weight) %>% mutate(round = i)
+    tourney_weights[[i + 1]] <- curr_weight_frame
+  }
+  tourney_winnings <- bind_rows(tourney_winnings)
+  tourney_weights <- bind_rows(tourney_weights)
+  return(list("winnings" = tourney_winnings, "weights" = tourney_weights))
+}
+
+tourney_results <- run_tourney(grid_search_full_frame, 10)
+
+tourney_results$weights %>% 
+  mutate(knocked_at = factor(knocked_at)) %>% 
+  ggplot(aes(x = round, y = weight, color = knocked_at, group = knocked_at)) + geom_line()
+ggplotly()
+
+tourney_results$winnings %>% 
+  mutate(knocked_at = factor(knocked_at)) %>% 
+  ggplot(aes(x = round, y = avg_win_tourney, color = knocked_at, group = knocked_at)) + geom_line()
+ggplotly()
 ```
 
