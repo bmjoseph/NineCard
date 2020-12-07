@@ -275,29 +275,31 @@ def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, 
         #only keep the card if it completes a set or a run
         return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) # returns boolean     
         
-def generate_half_length_near_runs_sets_draw_from_pile(deck_fraction):
+def generate_specific_length_near_runs_sets_draw_from_pile(deck_fraction):
     
-    
-    
-    '''
-    Takes in the hand and the card we are considering.
-    
-    If there is more than half the deck remaining, we figure out if it is part of a near set/run, and keep it if it is.
-    
-    If less than half the deck is remaining, we figure out if it is part of an actual set/run, and keep it if it is.
-    
-    Return Boolean (whether to keep it or not).
-    
-    '''
     
     def specific_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
+        
+        '''
+        Takes in the hand and the card we are considering.
+
+        If there is more than the deck fraction remaining, we figure out if it is part of a near set/run, and keep it if it is.
+
+        If less than the given deck fraction is remaining, we figure out if it is part of an actual set/run, and keep it if it is.
+
+        Return Boolean (whether to keep it or not).
+    
+        '''
         
         
     
         # getting the new card object
 
-        if not pile.length():
+        if not pile.length():           
             return False
+        
+        if anyone_knocked:
+            return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) 
 
         num_players = 2
 
@@ -454,13 +456,16 @@ def generate_near_runs_sets_discarder(deck_fraction):
 
         This function helps discard cards in a smarter way. (Note, the hand object here already has 10 cards, waiting for one to be discarded) 
 
-        If there are more than half of the cards in the deck left, isolate all of the cards that are part of near sets/runs. 
+        If there are more than the deck fraction of cards left in the deck, isolate all of the cards that are part of near sets/runs. 
         Then discard the highest remaining card that is not part of a full set/run or near set/run.
-        If there are less than half of the cards in the deck left, discard the highest remaining card that is not a part of a set/run. 
+        If there are less than the deck fraction of cards in the deck left, discard the highest remaining card that is not a part of a set/run. 
 
         Returns Card Object
 
         '''
+
+        if anyone_knocked:
+            return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
 
         num_players = 2
 

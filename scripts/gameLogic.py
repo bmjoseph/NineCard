@@ -300,7 +300,7 @@ class Game:
     def __init__(self, player_names, strategy_dict, knock_strategies, pile_strategies,
                  discard_strategies, target_score, total_rounds = None,
                  verbose = False, random_seed = None, data_path = None,
-                  extra_comments = "", save_results = True):
+                  extra_comments = "", save_results = True, mode = 'compete'):
         """
         Create a new game to be played by players
         player_names: List of Strings. A list of the names of the game players
@@ -347,6 +347,9 @@ class Game:
         self.data_path = data_path
         self.extra_comments = extra_comments
         self.save_results = save_results
+        self.mode = mode
+        if self.mode == 'turn score calculator':
+            self.turn_score_dict = {'round': [], 'player0': [], 'player1': []}
         if self.verbose: 
             print("------------------------------------------------------------")
             if total_rounds is not None:
@@ -356,7 +359,7 @@ class Game:
             print("------------------------------------------------------------")
         
         
-    def play_round(self):
+    def play_round(self, round_number):
         """
         Play one round. A round is defined as:
         1) Start with a fresh deck
@@ -373,8 +376,7 @@ class Game:
         for player in self.players:
             player.reset_knock()
             player.reset_hand()
-            player.draw_from_deck(self.deck, 9)
-            
+            player.draw_from_deck(self.deck, 9)   
         # Play one whole round until no more turns can be taken
         round_over = False
         current_turn = 0
@@ -397,6 +399,11 @@ class Game:
                 curr_player.take_turn(self.deck, self.pile, anyone_knocked, current_turn)
                 if curr_player.knocked:
                     anyone_knocked = True
+                else:
+                    if player_to_go == 0:
+                        self.turn_score_dict['player0'][round_number].append(curr_player.hand.score())
+                    elif player_to_go == 1:
+                        self.turn_score_dict['player1'][round_number].append(curr_player.hand.score())
                 player_to_go = (player_to_go + 1) % self.num_players
                 if not self.deck.length():
                     if self.verbose: print("The deck is empty! This ends the round. We will score the round as if", curr_player.name, "knocked. (unless someone else already has)")
@@ -484,16 +491,23 @@ class Game:
         Thereby ending the game.
         """
         if self.total_rounds is not None:
-            for i in range(self.total_rounds):
-                self.play_round()
+            for round_num in range(self.total_rounds):
+                if self.mode == 'turn score calculator':
+                    self.turn_score_dict['round'].append(round_num)
+                    self.turn_score_dict['player0'].append([])
+                    self.turn_score_dict['player1'].append([])
+                self.play_round(round_num)
+
+
         else:
             while max([p.get_score() for p in self.players]) < self.target_score:
-                self.play_round()
+                self.play_round(0)
         if self.save_results:
             self.store_results()
         # Game is now over, return a dictionary mapping names to scores
+        if self.mode == 'turn score calculator':
+            return self.turn_score_dict
         return {p.name:p.score for p in self.players}
-
 
 
 
