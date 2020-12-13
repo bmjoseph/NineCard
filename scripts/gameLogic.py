@@ -397,13 +397,17 @@ class Game:
             else:
                 # This must destructively change the player's hand, knocked status, the deck, and the pile.
                 curr_player.take_turn(self.deck, self.pile, anyone_knocked, current_turn)
+                if self.verbose: print(curr_player.hand.score(), "is their score after their turn.")
                 if curr_player.knocked:
                     anyone_knocked = True
                 else:
-                    if player_to_go == 0:
-                        self.turn_score_dict['player0'][round_number].append(curr_player.hand.score())
-                    elif player_to_go == 1:
-                        self.turn_score_dict['player1'][round_number].append(curr_player.hand.score())
+                    if self.mode == 'turn score calculator':
+                        if player_to_go == 0:
+                            if self.verbose: print("append player 0 turn dictionary")
+                            self.turn_score_dict['player0'][round_number].append(curr_player.hand.score())
+                        elif player_to_go == 1:
+                            if self.verbose: print("append player 1 turn dictionary")
+                            self.turn_score_dict['player1'][round_number].append(curr_player.hand.score())
                 player_to_go = (player_to_go + 1) % self.num_players
                 if not self.deck.length():
                     if self.verbose: print("The deck is empty! This ends the round. We will score the round as if", curr_player.name, "knocked. (unless someone else already has)")
