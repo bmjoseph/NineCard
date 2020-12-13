@@ -217,7 +217,7 @@ def draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn):
 
 
 
-
+#### not used after creating higher order function below, used initially for aggressive strategy ####
 def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
     
     '''
@@ -275,7 +275,73 @@ def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, 
         #only keep the card if it completes a set or a run
         return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) # returns boolean     
         
+def generate_specific_length_near_runs_sets_draw_from_pile(deck_fraction):
+    
+    
+    def specific_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
+        
+        '''
+        Takes in the hand and the card we are considering.
 
+        If there is more than the deck fraction remaining, we figure out if it is part of a near set/run, and keep it if it is.
+
+        If less than the given deck fraction is remaining, we figure out if it is part of an actual set/run, and keep it if it is.
+
+        Return Boolean (whether to keep it or not).
+    
+        '''
+        
+        
+    
+        # getting the new card object
+
+        if not pile.length():           
+            return False
+        
+        if anyone_knocked:
+            return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) 
+
+        num_players = 2
+
+        starting_deck_length = 52 - (num_players*9)
+
+        if deck.length() > starting_deck_length*deck_fraction: #i.e. more than half of the original cards in the deck to draw (after the cards are dealt)
+            #look for near sets and near runs
+
+            sorted_hand = sort_hand(hand)
+
+            new_card = pile.view_top_card()
+
+
+            #getting info on new card
+
+            suit = new_card.suit
+            value = new_card.value
+            rank = new_card.rank
+            numericrank = new_card.numeric_rank
+
+            #checking if part of near set:
+
+            if len(sorted_hand[sorted_hand['numeric_ranks'] == numericrank]) >= 1:
+
+                return True
+
+            else:
+                #checking if part of near run:
+
+                if len(sorted_hand[(sorted_hand['suits'] == suit) & (abs(sorted_hand['numeric_ranks'] - numericrank) == 1)] >= 1):
+
+                    return True
+
+                return False
+
+        else: #i.e. there are less than or equal to half the cards remaining in the deck (after the cards are dealt)
+
+            #only keep the card if it completes a set or a run
+            return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) # returns boolean
+        
+    return specific_length_near_runs_sets_draw_from_pile
+        
     
 def discard_highest_useless(hand, deck, pile, anyone_knocked, turn):
     
@@ -311,6 +377,7 @@ def discard_highest_useless(hand, deck, pile, anyone_knocked, turn):
 
 
 
+#### not used after creating higher order function below, used initially for aggressive strategy ####
 
 def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
     
@@ -369,7 +436,7 @@ def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
             
             
             
-        relevant_indices = np.where(bool_array == False) # note, this should never return am empty array as per above condition
+        relevant_indices = np.where(bool_array == False) # note, this should never return an empty array as per above condition
         
         final_index = np.where(numeric_ranks == max(numeric_ranks[relevant_indices]))[0][0] # the extra indexing breaks a tie if needed
         
@@ -379,6 +446,82 @@ def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
     else:
         
         return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
+    
+
+def generate_near_runs_sets_discarder(deck_fraction):
+    
+    def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
+
+        '''
+
+        This function helps discard cards in a smarter way. (Note, the hand object here already has 10 cards, waiting for one to be discarded) 
+
+        If there are more than the deck fraction of cards left in the deck, isolate all of the cards that are part of near sets/runs. 
+        Then discard the highest remaining card that is not part of a full set/run or near set/run.
+        If there are less than the deck fraction of cards in the deck left, discard the highest remaining card that is not a part of a set/run. 
+
+        Returns Card Object
+
+        '''
+
+        if anyone_knocked:
+            return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
+
+        num_players = 2
+
+        starting_deck_length = 52 - (num_players*9)
+
+        if deck.length() > starting_deck_length*deck_fraction: #i.e. more than half of the original cards in the deck to draw (after the cards are dealt)
+            #look for near sets and near runs
+
+            #get the info about the cards
+            suits = np.array([c.suit for c in hand.cards])
+            ranks = np.array([c.rank for c in hand.cards])
+            values = np.array([c.value for c in hand.cards])
+            numeric_ranks = np.array([c.numeric_rank for c in hand.cards])
+
+            # looking for near sets and near runs:
+
+            bool_array = np.repeat(False, len(numeric_ranks))
+
+            for i in range(len(numeric_ranks)):
+
+                near_set_array = numeric_ranks == numeric_ranks[i] # generates boolean for card's near sets
+                near_set_array[i] = False # avoiding an incorrect True here: will get populated by a different element
+                near_run_array = (abs(numeric_ranks - numeric_ranks[i]) == 1) & (suits == suits[i]) # generates boolean for card's near runs
+                near_run_array[i] = False # # avoiding an incorrect True here: will get populated by a different element
+                bool_array = bool_array + near_set_array + near_run_array # adding booleans
+                # (once element is true, it's never false later (at the end we'll know which cards we can discard)
+
+
+
+
+            # selecting the card to discard
+
+            ## getting all of the "false" indexes from bool_array, then selecting the max of those in numeric_ranks to discard
+
+            if sum(bool_array) == len(bool_array): # i.e. if every value is True, then each card is part of a near set/run (this is rare)
+
+                # discard a random card
+
+                final_index = np.where(numeric_ranks == np.random.choice(numeric_ranks))[0][0] #the extra indexing breaks a tie if needed
+
+                return Card(ranks[final_index], suits[final_index])
+
+
+
+            relevant_indices = np.where(bool_array == False) # note, this should never return an empty array as per above condition
+
+            final_index = np.where(numeric_ranks == max(numeric_ranks[relevant_indices]))[0][0] # the extra indexing breaks a tie if needed
+
+            return Card(ranks[final_index], suits[final_index])
+
+
+        else:
+
+            return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
+        
+    return near_runs_sets_discarder
 
     
 
