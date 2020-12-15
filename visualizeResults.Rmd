@@ -32,9 +32,10 @@ results %>%
          player_number == 1) %>% 
   mutate(knocked_at = as.numeric(substr(knock_strategy, 9, nchar(knock_strategy)))) %>% 
   select(knocked_at, everything()) %>% 
+  #bind_rows(grid_search_half_triangle %>% filter(opp_knocked_at == 0))
   rename(`Average Win per Round` = avg_win) %>% 
   ggplot(aes(x = knocked_at, y = `Average Win per Round`)) +
-    geom_point(size = 2, aes(color = `Average Win per Round`, text = glue("Knocked At: {knocked_at}\nOpponent: Knocks at 0\nTrials: {rounds}\nAverage Time per Round: {round(elapsed_seconds/rounds, 2)} Seconds\nAverage Win per Round: {round(`Average Win per Round`, 2)}\nRound level Variance: {round(var_win, 2)}\n"))) +
+    geom_point(size = 3, aes(color = `Average Win per Round`, text = glue("Knocked At: {knocked_at}\nOpponent: Knocks at 0\nTrials: {rounds}\nAverage Time per Round: {round(elapsed_seconds/rounds, 2)} Seconds\nAverage Win per Round: {round(`Average Win per Round`, 2)}\nRound level Variance: {round(var_win, 2)}\n"))) +
     geom_hline(yintercept = 0) +
     labs(title = "First Grid Search against Opponent who Knocks at 0",
          y = "Average win Per Round",
@@ -47,6 +48,7 @@ ggplotly(tooltip = "text")
 
 
 ```{r}
+
 constant_grid_data <- results %>% 
   filter(notes %in% c("Looking for best strategy against an opponent who knocks only at 0",
                       "Completing the grid search on constant knock strategies.")) %>% 
