@@ -24,6 +24,43 @@ theme_clean <- function() {
           panel.background = element_rect(colour = "#E1E1E1"),
           panel.border = element_blank())
 }
+constant_grid_data <- results %>% 
+  filter(notes %in% c("Looking for best strategy against an opponent who knocks only at 0",
+                      "Completing the grid search on constant knock strategies.")) %>% 
+  mutate(knocked_at = as.numeric(substr(knock_strategy, 9, nchar(knock_strategy)))) %>% 
+  select(knocked_at, everything()) 
+
+
+grid_search_half_triangle <- constant_grid_data %>% 
+  mutate(other_player = 1 - player_number) %>% 
+  filter(player_number == 1) %>% 
+  left_join(constant_grid_data %>% select(sim_id, opp_knocked_at = knocked_at, opp_wins = wins, player_number),
+            by = c("other_player" = "player_number", "sim_id")) %>% 
+  group_by(knocked_at, opp_knocked_at) %>% 
+  # This only removes some rows for when knock strategies are the same, so there are two rows which average to 0
+  summarize(avg_win = weighted.mean(avg_win, rounds),
+            var_win = weighted.mean(var_win, rounds),
+            rounds = sum(rounds),
+            wins = sum(wins),
+            opp_wins = sum(opp_wins),
+            elapsed_seconds = sum(elapsed_seconds)
+            ) %>% 
+  ungroup() 
+
+constant_conservative_knock_grid_search <- grid_search_half_triangle %>% 
+  bind_rows(
+    grid_search_half_triangle %>% 
+      rename(opp_knocked_at = knocked_at,
+             knocked_at = opp_knocked_at,
+             opp_wins = wins,
+             wins = opp_wins) %>% 
+      mutate(avg_win = -avg_win)
+  ) %>% 
+  group_by(knocked_at, opp_knocked_at) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  mutate(avg_win = ifelse(knocked_at == opp_knocked_at, 0, round(avg_win, 2))) %>% 
+  rename(`Average Win per Round` = avg_win)
 ```
 
 
@@ -146,13 +183,8 @@ Our experiment proceeded with the following tests:
 The difference between the marathoner and the conservative strategy is when each player knocks. Because the marathoner only knocks at a perfect score, we ran the marathoner strategy against a player that knocks between 5 and 60 points left in their hand (incremented by 5). The reason we don't go above 60 is because players don't often have more than 60 points in their hand and we deemed it too bad of an idea to knock (instead of trying to improve your hand) when you do have that many points. The results are below:
 
 ```{r}
-constant_vs_0_plot <- results %>% 
-  filter(notes %in% c("Looking for best strategy against an opponent who knocks only at 0"),
-         player_number == 1) %>% 
-  mutate(knocked_at = as.numeric(substr(knock_strategy, 9, nchar(knock_strategy)))) %>% 
-  select(knocked_at, everything()) %>% 
-  #bind_rows(grid_search_half_triangle %>% filter(opp_knocked_at == 0))
-  rename(`Average Win per Round` = avg_win) %>% 
+constant_vs_0_plot <- constant_conservative_knock_grid_search %>% 
+  filter(opp_knocked_at == 0) %>% 
   ggplot(aes(x = knocked_at, y = `Average Win per Round`)) +
     geom_point(size = 3, aes(color = `Average Win per Round`, text = glue("Knocked At: {knocked_at}\nOpponent: Knocks at 0\nTrials: {rounds}\nAverage Time per Round: {round(elapsed_seconds/rounds, 2)} Seconds\nAverage Win per Round: {round(`Average Win per Round`, 2)}\nRound level Variance: {round(var_win, 2)}\n"))) +
     geom_hline(yintercept = 0) +
@@ -176,43 +208,7 @@ From this graph we learned that never knocking doesn't beat knocking when you ac
 For this section, we wanted to find out which value you should knock below when both players are playing with the conservative knock strategy. This was a time consuming operation, as the grid is 12 by 12 which makes for 72 competitions (i.e. half of the total divided by 2). Each matchup had a minimum of 400 rounds, and the values in the 10-40 range (the range where we expected the "answer" to be in) ran for 1000 rounds. The results are below:
 
 ```{r}
-constant_grid_data <- results %>% 
-  filter(notes %in% c("Looking for best strategy against an opponent who knocks only at 0",
-                      "Completing the grid search on constant knock strategies.")) %>% 
-  mutate(knocked_at = as.numeric(substr(knock_strategy, 9, nchar(knock_strategy)))) %>% 
-  select(knocked_at, everything()) 
-
-
-grid_search_half_triangle <- constant_grid_data %>% 
-  mutate(other_player = 1 - player_number) %>% 
-  filter(player_number == 1) %>% 
-  left_join(constant_grid_data %>% select(sim_id, opp_knocked_at = knocked_at, opp_wins = wins, player_number),
-            by = c("other_player" = "player_number", "sim_id")) %>% 
-  group_by(knocked_at, opp_knocked_at) %>% 
-  # This only removes some rows for when knock strategies are the same, so there are two rows which average to 0
-  summarize(avg_win = weighted.mean(avg_win, rounds),
-            var_win = weighted.mean(var_win, rounds),
-            rounds = sum(rounds),
-            wins = sum(wins),
-            opp_wins = sum(opp_wins),
-            elapsed_seconds = sum(elapsed_seconds)
-            ) %>% 
-  ungroup() 
-
-constant_conservative_knock_grid_search <- grid_search_half_triangle %>% 
-  bind_rows(
-    grid_search_half_triangle %>% 
-      rename(opp_knocked_at = knocked_at,
-             knocked_at = opp_knocked_at,
-             opp_wins = wins,
-             wins = opp_wins) %>% 
-      mutate(avg_win = -avg_win)
-  ) %>% 
-  group_by(knocked_at, opp_knocked_at) %>% 
-  slice(1) %>% 
-  ungroup() %>% 
-  mutate(avg_win = ifelse(knocked_at == opp_knocked_at, 0, round(avg_win, 2))) %>% 
-  rename(`Average Win per Round` = avg_win) %>% 
+constant_conservative_knock_grid_search_plot <- constant_conservative_knock_grid_search %>% 
   ggplot(aes(x = knocked_at, y = opp_knocked_at, fill = `Average Win per Round`)) +
   geom_tile(aes(text = glue("Knocked At: {knocked_at}\nOpponent Knocks At: {opp_knocked_at}\nTrials: {rounds}\nAverage Time per Round: {round(elapsed_seconds/rounds, 2)} Seconds\nAverage Win per Round: {round(`Average Win per Round`, 2)}\nNumber of Wins: {wins}\nRound level Variance: {round(var_win, 2)}\n"))) +
   geom_text(aes(label = `Average Win per Round`), size = 3, alpha = .5) +
@@ -222,7 +218,7 @@ constant_conservative_knock_grid_search <- grid_search_half_triangle %>%
          x = "Knock Strategy",
          y = "Opponent Knock Strategy") 
 # TODO: make it compare on hover by default.
-ggplotly(constant_conservative_knock_grid_search, tooltip = "text", width = 800)
+ggplotly(constant_conservative_knock_grid_search_plot, tooltip = "text", width = 800)
 ```
 
 
