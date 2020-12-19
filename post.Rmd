@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message = FALSE)
 library(tidyverse)
 library(glue)
 library(plotly)
+library(reactable)
+library(htmltools)
 results <- read_csv("data/results.csv")
 theme_clean <- function() {
   theme_bw(base_size = 11) +
@@ -240,8 +242,7 @@ We now look to see if being a little more aggressive with what we allow into our
 
 To test the aggressive draw and discard approaches, we held the knock values constant between the two players and ran through all knock values between 5 and 60 (incrementing by 5 as before). The results are below:
 
-TODO: Make this the right plot.  
-[](turn_scores.png)
+![](visuals/conservative_vs_aggressive.png)
 
 Personally, these results were very surprising. Anecdotally when I play Nine Card, I employ a strategy similar to this as I believe that picking up cards that can get me closer to a run or a set are more helpful than drawing some random card from the rest of the deck. The results indicate that this couldn't be further from the truth. Apart from when both players knock at absurdly high values (i.e. >= 50), the conservative strategy dominates the aggressive strategy. In particular, we can see that the knock value we found to be optimal in the conservative strategy (25) defeats this strategy by more than 10 points per round. 
 
@@ -253,8 +254,74 @@ We went ahead to see how many turns it took the conservative strategy (knocking 
 
 As our intuition grew for why the conservative strategy (knocking at 25) was winning against everyone, we decided to try to devise a strategy that learned from this conservative strategy to defeat it. We first plotted the average score in a player's hand per turn when they employ the conservative strategy (knocking at 25). The distribution (and table of values) is below.  
 
-TODO: Make this the correct plot and put in the table   
-[](visuals/constant_conservative_knock_grid_search.png)
+[](visuals/ScorePerTurnPer1000Rounds.png)
+
+```{r}
+turn_scores <- read_csv("data/ScoresByTurn - knock_25_strategy.csv")%>% 
+  mutate(`SD Score` = case_when(`SD Score` == "-" ~ NA_real_,
+                                T ~ as.numeric(`SD Score`)))
+good_bad_pal <- function(x) rgb(colorRamp(c("dark green", "white",  "dark red"))(x), maxColorValue = 255)
+# Render a bar chart with a label on the left
+bar_chart <- function(label, width = "100%", height = "16px", fill = "#00bfc4", background = NULL) {
+  bar <- div(style = list(background = fill, width = width, height = height))
+  chart <- div(style = list(flexGrow = 1, marginLeft = "2px", background = background), bar)
+  #label = str_pad(label, width = 7, side = "right")
+  div(style = list(display = "flex", alignItems = "center"), chart)
+}
+turn_scores  %>% 
+  mutate(count = Count) %>% 
+        # avg_score = `Mean Score`) %>% 
+  select(Turn, `Mean Score`, everything()) %>% 
+  reactable(
+    width = 800,
+    defaultPageSize = nrow(turn_scores),
+    defaultColDef = colDef(align = "center"),
+    columns = list(
+      Turn = colDef("Turn", width = 75),
+      `Mean Score` = colDef("Avg Score", width = 75,
+                            style = function(value) {
+                              normalized <- (value - 0) / ( max(turn_scores$`Mean Score`) - 0)
+                              list(background = good_bad_pal(normalized))
+                              }),
+      # avg_score = colDef("", width = 200,
+      #                      cell = function(value) {
+      #                   normalized <- (value - 0) / (max(turn_scores$`Mean Score`) - 0)
+      #                   setwidth =  paste0(round(normalized*200, 2), "%")
+      #                   print(setwidth)
+      #                    bar <- div(style = list(background = NULL, width = setwidth, height = "16px"))
+      #                     chart <- div(style = list(flexGrow = 1, marginLeft = "2px", background = good_bad_pal(normalized)), bar)
+      #                     #label = str_pad(label, width = 7, side = "right")
+      #                     div(style = list(display = "flex", alignItems = "center"), chart)
+      #               }),
+            # avg_score = colDef("", width = 200,
+            #                cell = function(value) {
+            #            width <- paste0(value / max(turn_scores$`Mean Score`) * 100, "%")
+            #             normalized <- (value - 0) / (max(turn_scores$`Mean Score`) - 0)
+            #            fill = good_bad_pal(normalized)
+            #             bar_chart(value, width = width, fill = fill)
+            #         }),
+      `SD Score` = colDef("Score SD", width = 75,
+                          cell = function(value) {
+                            if (is.na(value)) {
+                              "-"} else {value}}),
+      `Min Score` = colDef("Min Score", width = 75,
+                            style = function(value) {
+                              normalized <- (value - 0) / (55 - 0)}),
+      `Max Score` = colDef("Max Score", width = 75,
+                            style = function(value) {
+                              normalized <- (value - 0) / (100 - 0)
+                              #print(normalized)
+                             # list(background = good_bad_pal(normalized), color = "black")
+                              }),
+      `Count` =colDef(name = "", align = "right", width = 50),
+     `count` =colDef(name = "Count", align = "left", width = 200,
+                      cell = function(value) {
+                        width <- paste0(value / max(turn_scores$Count) * 100, "%")
+                        bar_chart(value, width = width)
+                    }))
+      
+    )
+```
 
 
 This plot and table of values tells a fascinating story of the score totals per round in a game of Ninecard. First, most players are being dealt ~52 points. From then on, you are expected to gain ~7 points after completing your first turn, ~5.5 points on your second turn, ~4 on your third turn, ~4 on your fourth turn, etc. It appears that by the time you play your sixth turn, you are only expecting to gain a point every turn after that, and on average, you'll fall under 25 points on your ninth turn. 
@@ -276,7 +343,7 @@ To recap, our key takeaways can be boiled down to:
 3) Paying attention to what turn you are on is important -- as you approach the ninth or tenth round, you should be looking to knock as the potential point gain starts to become outweighed by the potential point loss. If you still have many points in your hand, you should continue to try to improve your hand -- however, if you are near 25 points, you should knock.   
 4) Using a dynamic knock strategy is helpful -- since there's nothing in the rules saying that you need to wait to knock till later in the game, you should knock as soon as you see that your hand is better than your expectation of your opponent's hand after they play their next turn. **Knocking early is fair game and should be done to maximize points!**  
 
-
+<div class="tocify-extend-page" data-unique="tocify-extend-page" style="height: 0;"></div>
 
 
 
