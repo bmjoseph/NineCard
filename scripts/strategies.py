@@ -105,12 +105,16 @@ def make_list_knock_strategy(lst):
     def strategy(hand, deck, pile, anyone_knocked, turn):
         
         if turn < len(lst): # indexed from 1
-            return lst[turn - 1]
+            if anyone_knocked:
+                return False
+            return hand.score() < lst[turn - 1]
         
         else:
-            return lst[len(lst) - 1]
+            if anyone_knocked:
+                return False
+            return hand.score() < lst[len(lst) - 1]
         
-        return strategy
+    return strategy
     
 
 def always_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
@@ -275,10 +279,10 @@ def half_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, 
         #only keep the card if it completes a set or a run
         return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) # returns boolean     
         
-def generate_specific_length_near_runs_sets_draw_from_pile(deck_fraction):
+def generate_specific_turn_near_runs_sets_draw_from_pile(conservative_start_turn):
     
     
-    def specific_length_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
+    def specific_turn_near_runs_sets_draw_from_pile(hand, deck, pile, anyone_knocked, turn):
         
         '''
         Takes in the hand and the card we are considering.
@@ -301,12 +305,7 @@ def generate_specific_length_near_runs_sets_draw_from_pile(deck_fraction):
         if anyone_knocked:
             return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) 
 
-        num_players = 2
-
-        starting_deck_length = 52 - (num_players*9)
-
-        if deck.length() > starting_deck_length*deck_fraction: #i.e. more than half of the original cards in the deck to draw (after the cards are dealt)
-            #look for near sets and near runs
+        if turn < conservative_start_turn: #i.e. look for near runs and/or sets
 
             sorted_hand = sort_hand(hand)
 
@@ -340,7 +339,7 @@ def generate_specific_length_near_runs_sets_draw_from_pile(deck_fraction):
             #only keep the card if it completes a set or a run
             return draw_from_pile_if_completes(hand, deck, pile, anyone_knocked, turn) # returns boolean
         
-    return specific_length_near_runs_sets_draw_from_pile
+    return specific_turn_near_runs_sets_draw_from_pile
         
     
 def discard_highest_useless(hand, deck, pile, anyone_knocked, turn):
@@ -448,9 +447,9 @@ def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
         return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
     
 
-def generate_near_runs_sets_discarder(deck_fraction):
+def generate_turn_near_runs_sets_discarder(conservative_start_turn):
     
-    def near_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
+    def near_turn_runs_sets_discarder(hand, deck, pile, anyone_knocked, turn):
 
         '''
 
@@ -467,12 +466,7 @@ def generate_near_runs_sets_discarder(deck_fraction):
         if anyone_knocked:
             return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
 
-        num_players = 2
-
-        starting_deck_length = 52 - (num_players*9)
-
-        if deck.length() > starting_deck_length*deck_fraction: #i.e. more than half of the original cards in the deck to draw (after the cards are dealt)
-            #look for near sets and near runs
+        if turn < conservative_start_turn:  #look for near runs and/or sets
 
             #get the info about the cards
             suits = np.array([c.suit for c in hand.cards])
@@ -521,7 +515,7 @@ def generate_near_runs_sets_discarder(deck_fraction):
 
             return discard_highest_useless(hand, deck, pile, anyone_knocked, turn)
         
-    return near_runs_sets_discarder
+    return near_turn_runs_sets_discarder
 
     
 
